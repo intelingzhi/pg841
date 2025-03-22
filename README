@@ -27,3 +27,7 @@ The latest version of this software may be obtained at
 http://www.postgresql.org/download/.  For more information look at our
 web site located at http://www.postgresql.org/.
 
+编译命令
+sudo ./configure --prefix=/usr/local/pgsql-8.4.1 --enable-debug --enable-cassert CFLAGS="-g -O0"
+sudo make
+sudo make install
