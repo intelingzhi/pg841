@@ -58,10 +58,13 @@ static char *get_current_username(const char *progname);
 int
 main(int argc, char *argv[])
 {
+	// 从程序的完整路径中提取出可执行文件的名称，实例多为"postgres"。【const char *】意味着这是个只读字符串。
 	progname = get_progname(argv[0]);
 
 	/*
 	 * Platform-specific startup hacks
+	 * 根据当前运行的操作系统或硬件平台，执行一些必要的初始化或配置工作。
+	 * 由于我们目前使用linux平台，该函数并不涉及Linux系统的配置工作，此步骤可以跳过。
 	 */
 	startup_hacks(progname);
 
@@ -75,6 +78,7 @@ main(int argc, char *argv[])
 	 * extra room. Therefore this should be done as early as possible during
 	 * startup, to avoid entanglements with code that might save a getenv()
 	 * result pointer.
+	 * 一句话总结：备份命令行参数和环境变量
 	 */
 	argv = save_ps_display_args(argc, argv);
 
@@ -85,6 +89,7 @@ main(int argc, char *argv[])
 	 * available to fill pg_control during initdb.	LC_MESSAGES will get set
 	 * later during GUC option processing, but we set it here to allow startup
 	 * error messages to be localized.
+	 * 一句话总结：通过 argv[0] 获取程序的路径，并结合 PG_TEXTDOMAIN("postgres") 设置语言环境和文本域，确保 PostgreSQL 能够正确支持多语言和本地化功能
 	 */
 
 	set_pglocale_pgservice(argv[0], PG_TEXTDOMAIN("postgres"));
@@ -96,6 +101,7 @@ main(int argc, char *argv[])
 	 * that by querying the environment explicitly first for LC_COLLATE and
 	 * LC_CTYPE. We have to do this because initdb passes those values in the
 	 * environment. If there is nothing there we fall back on the codepage.
+	 *  一句话总结：Windows设置语言环境
 	 */
 	{
 		char	   *env_locale;
@@ -111,17 +117,20 @@ main(int argc, char *argv[])
 			pg_perm_setlocale(LC_CTYPE, "");
 	}
 #else
+	// *  一句话总结：设置语言环境,空字符串表示使用系统默认的语言环境。
 	pg_perm_setlocale(LC_COLLATE, "");
 	pg_perm_setlocale(LC_CTYPE, "");
 #endif
 
 #ifdef LC_MESSAGES
+	// 确保能够根据系统配置输出本地化的消息。空字符串表示使用系统默认的语言环境，从而支持多语言功能。
 	pg_perm_setlocale(LC_MESSAGES, "");
 #endif
 
 	/*
 	 * We keep these set to "C" always, except transiently in pg_locale.c; see
 	 * that file for explanations.
+	 * 确保 PostgreSQL 在处理货币、数字和日期时间时使用统一的、无本地化的格式，从而避免因本地化设置不同而导致的格式不一致问题。
 	 */
 	pg_perm_setlocale(LC_MONETARY, "C");
 	pg_perm_setlocale(LC_NUMERIC, "C");
@@ -131,11 +140,17 @@ main(int argc, char *argv[])
 	 * Now that we have absorbed as much as we wish to from the locale
 	 * environment, remove any LC_ALL setting, so that the environment
 	 * variables installed by pg_perm_setlocale have force.
+	 * LC_ALL的优先级最高，会覆盖其他所有LC_*变量（如LC_CTYPE、LC_COLLATE）和LANG的设置。
+	 * 如果 LC_ALL 被设置，它会强制所有语言环境类别使用相同的值。
+	 * 通过unsetenv("LC_ALL")删除该变量，避免其后续影响。
+	 * 移除LC_ALL后，后续代码（如pg_perm_setlocale）可以通过设置特定的LC_*变量（如LC_COLLATE）调整本地化行为，而不会被LC_ALL覆盖。
 	 */
 	unsetenv("LC_ALL");
 
 	/*
 	 * Catch standard options before doing much else
+	 * 处理了两个标准的命令行选项：--help（或 -?）和 --version（或 -V）
+	 * 例如：./postgres --version
 	 */
 	if (argc > 1)
 	{
@@ -153,6 +168,12 @@ main(int argc, char *argv[])
 
 	/*
 	 * Make sure we are not running as root.
+	 * 禁止root用户运行此程序。
+	 * 1、最小权限原则：如果 PostgreSQL 存在漏洞，攻击者可能利用这些漏洞获取 root 权限，从而完全控制系统。
+	 * 2、防止权限滥用：数据库进程可以修改系统关键文件（如 /etc/passwd、/etc/shadow）；数据库进程可以启动或终止其他系统服务。
+	 * 3、防止 setuid 漏洞：如果以 setuid 方式运行（即普通用户启动但以 root 权限运行），可能存在以下风险：
+				- 恶意代码可能通过 setuid 机制提升权限，获取 root 权限。
+				- 即使 PostgreSQL 本身没有漏洞，其他依赖库或插件中的漏洞也可能被利用。
 	 */
 	check_root(progname);
 
@@ -160,8 +181,10 @@ main(int argc, char *argv[])
 	 * Dispatch to one of various subprograms depending on first argument.
 	 */
 
-#ifdef EXEC_BACKEND
+#ifdef EXEC_BACKEND  // 此模式为Windows专用，EXEC_BACKEND 通常用于创建子进程。
+	// 只有在定义了 EXEC_BACKEND 并且命令行参数包含 --fork 时，才调用SubPostmasterMain并退出，不执行后续代码
 	if (argc > 1 && strncmp(argv[1], "--fork", 6) == 0)
+		// 父进程不会使用 --fork 参数，因此不会进入 EXEC_BACKEND 的 exit 逻辑。
 		exit(SubPostmasterMain(argc, argv));
 #endif
 
@@ -172,16 +195,24 @@ main(int argc, char *argv[])
 	 *
 	 * SubPostmasterMain() will do this for itself, but the remaining modes
 	 * need it here
+	 * 在 Windows 平台上初始化信号处理。
+	 * 父进程会执行这段代码，初始化信号处理。
 	 */
 	pgwin32_signal_initialize();
 #endif
 
+	// 启动辅助进程（如 bootstrap 模式），并且不会返回。
+	// Bootstrap 模式：用于初始化数据库系统表，通常在数据库初始化（initdb）时使用。
+    // 注意，当进入这个if之后，程序可能会已终止或永久阻塞在 AuxiliaryProcessMain 中，永远不会执行最后一行的 exit(PostmasterMain(argc, argv));
 	if (argc > 1 && strcmp(argv[1], "--boot") == 0)
 		AuxiliaryProcessMain(argc, argv);		/* does not return */
 
+	// 描述配置参数，通常用于调试或获取配置信息。
+	// GUC（Grand Unified Configuration）：PostgreSQL 的配置管理系统，用于管理所有运行时参数。
 	if (argc > 1 && strcmp(argv[1], "--describe-config") == 0)
 		exit(GucInfoMain());
 
+	// 启动单用户模式，通常用于数据库维护或修复。
 	if (argc > 1 && strcmp(argv[1], "--single") == 0)
 		exit(PostgresMain(argc, argv, get_current_username(progname)));
 
@@ -347,6 +378,7 @@ check_root(const char *progname)
 	 */
 	if (getuid() != geteuid())
 	{
+		// 如果两者不一致，说明程序可能以 setuid 方式运行，存在安全风险，输出错误信息并退出程序。
 		write_stderr("%s: real and effective user IDs must match\n",
 					 progname);
 		exit(1);

@@ -1,0 +1,68 @@
+# 编译生成的文件
+*.o
+*.lo
+*.la
+*.a
+*.so
+*.so.*
+*.dylib
+
+# 构建目录
+build/
+dist/
+*.egg-info/
+
+# 自动生成的文件
+*.log
+*.aux
+*.toc
+*.out
+*.bbl
+*.blg
+*.idx
+*.ilg
+*.ind
+
+# 临时文件
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# 配置文件
+*.conf
+*.ini
+
+# 数据库文件
+*.sqlite
+*.db
+
+# 测试相关
+*.gcda
+*.gcno
+*.gcov
+
+# 平台特定文件
+*.dll
+*.exe
+*.msi
+*.pdb
+*.lib
+*.exp
+*.manifest
+*.suo
+*.user
+*.ncb
+*.sdf
+*.opensdf
+*.sln
+*.vcproj
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.xcodeproj
+*.xcworkspace
+*.xcuserstate
+*.DS_Store
+Thumbs.db
