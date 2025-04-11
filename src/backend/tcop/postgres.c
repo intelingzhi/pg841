@@ -51,7 +51,7 @@
 #include "nodes/print.h"
 #include "optimizer/planner.h"
 #include "pgstat.h"
-#include "pg_trace.h"
+// #include "pg_trace.h"
 #include "parser/analyze.h"
 #include "parser/parser.h"
 #include "postmaster/autovacuum.h"

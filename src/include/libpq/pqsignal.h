@@ -25,7 +25,7 @@ extern sigset_t UnBlockSig,
 			BlockSig,
 			AuthBlockSig;
 
-#define PG_SETMASK(mask)	sigprocmask(SIG_SETMASK, mask, NULL)
+#define PG_SETMASK(mask)	sigprocmask(SIG_SETMASK, mask, NULL)  // 直接调用Unix系统的sigprocmask(完全替换当前信号掩码, 要设置的信号集, 不保存旧的信号掩码)函数
 #else
 extern int	UnBlockSig,
 			BlockSig,

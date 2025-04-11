@@ -2126,6 +2126,8 @@
             "-g",
             "-I../../../src/include",
             "-D_GNU_SOURCE",
+            "-include",
+            "postgres.h",
             "-o",
             "postmaster.o",
             "postmaster.c"
@@ -3159,6 +3161,10 @@
             "-g",
             "-I../../../../src/include",
             "-D_GNU_SOURCE",
+            "-include",
+            "c.h",
+            "-include",
+            "postgres.h",
             "-o",
             "pg_locale.o",
             "pg_locale.c"
@@ -5247,6 +5253,10 @@
             "-I.",
             "-I../../../../src/include",
             "-D_GNU_SOURCE",
+            "-include",
+            "c.h",
+            "-include",
+            "postgres.h",
             "-o",
             "guc.o",
             "guc.c"
@@ -8811,6 +8821,8 @@
             "-g",
             "-I../../../src/include",
             "-D_GNU_SOURCE",
+            "-include",
+            "c.h",
             "-o",
             "bitmapset.o",
             "bitmapset.c"
@@ -12332,6 +12344,8 @@
             "-g",
             "-I../../../src/include",
             "-D_GNU_SOURCE",
+            "-include",
+            "c.h",
             "-o",
             "nodes.o",
             "nodes.c"
@@ -15691,5 +15705,70 @@
         ],
         "directory": "/home/bdi/work/postgresql-8.4.1/src/port",
         "file": "copydir.c"
+    },
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-I../../../src/include",
+            "-include",
+            "postgres.h",
+            "-o",
+            "/dev/null",
+            "primnodes.h"
+        ],
+        "directory": "/home/bdi/work/postgresql-8.4.1/src/include/nodes",
+        "file": "primnodes.h"
+    },
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-I../../../src/include",
+            "-include",
+            "postgres.h",
+            "-include",
+            "c.h",
+            "-include",
+            "socket.h",
+            "-include",
+            "pg_config.h",
+            "-o",
+            "/dev/null",
+            "pgcomm.h"
+        ],
+        "directory": "/home/bdi/work/postgresql-8.4.1/src/include/libpq",
+        "file": "pgcomm.h"
+    },
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-g",
+            "-O0",
+            "-Wall",
+            "-Wmissing-prototypes",
+            "-Wpointer-arith",
+            "-Wdeclaration-after-statement",
+            "-Wendif-labels",
+            "-fno-strict-aliasing",
+            "-fwrapv",
+            "-g",
+            "-I.",
+            "-I../../../../src/include",
+            "-D_GNU_SOURCE",
+            "-include",
+            "guc.c",
+            "-include",
+            "c.h",
+            "-include",
+            "postgres.h",
+            "-o",
+            "guc-file.o",
+            "guc-file.c"
+        ],
+        "directory": "/home/bdi/work/postgresql-8.4.1/src/backend/utils/misc",
+        "file": "guc-file.c"
     }
+    
 ]

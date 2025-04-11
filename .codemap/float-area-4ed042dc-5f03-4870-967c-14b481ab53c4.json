@@ -1,0 +1,234 @@
+{
+    "type": "float-area",
+    "_widgets": [
+        [
+            {
+                "widget": {
+                    "constructionOptions": {
+                        "factoryId": "code-editor-opener",
+                        "options": {
+                            "kind": "navigatable",
+                            "uri": "src\\backend\\postmaster\\postmaster.c",
+                            "floatAreaId": "4ed042dc-5f03-4870-967c-14b481ab53c4"
+                        }
+                    },
+                    "innerWidgetState": {
+                        "cursorState": [
+                            {
+                                "inSelectionMode": false,
+                                "selectionStart": {
+                                    "lineNumber": 473,
+                                    "column": 5
+                                },
+                                "position": {
+                                    "lineNumber": 473,
+                                    "column": 5
+                                }
+                            }
+                        ],
+                        "viewState": {
+                            "scrollLeft": 0,
+                            "firstPosition": {
+                                "lineNumber": 469,
+                                "column": 1
+                            },
+                            "firstPositionDeltaTop": -5
+                        },
+                        "contributionsState": {
+                            "editor.contrib.folding": {
+                                "collapsedRegions": [
+                                    {
+                                        "startLineNumber": 270,
+                                        "endLineNumber": 281,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": -890602
+                                    },
+                                    {
+                                        "startLineNumber": 286,
+                                        "endLineNumber": 288,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 354816
+                                    },
+                                    {
+                                        "startLineNumber": 296,
+                                        "endLineNumber": 300,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": -808344
+                                    },
+                                    {
+                                        "startLineNumber": 305,
+                                        "endLineNumber": 307,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 291913
+                                    },
+                                    {
+                                        "startLineNumber": 312,
+                                        "endLineNumber": 314,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 682971
+                                    },
+                                    {
+                                        "startLineNumber": 319,
+                                        "endLineNumber": 320,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 726409
+                                    },
+                                    {
+                                        "startLineNumber": 333,
+                                        "endLineNumber": 334,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 38825
+                                    },
+                                    {
+                                        "startLineNumber": 367,
+                                        "endLineNumber": 370,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 468687
+                                    },
+                                    {
+                                        "startLineNumber": 382,
+                                        "endLineNumber": 385,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 336373
+                                    },
+                                    {
+                                        "startLineNumber": 397,
+                                        "endLineNumber": 418,
+                                        "isCollapsed": true,
+                                        "source": 0,
+                                        "checksum": 708972
+                                    }
+                                ],
+                                "lineCount": 4870,
+                                "provider": "syntax",
+                                "foldedImports": false
+                            },
+                            "editor.contrib.wordHighlighter": false
+                        }
+                    }
+                },
+                "width": 1009.4999328681447,
+                "height": 949.3333129882812,
+                "spacing": 22
+            }
+        ]
+    ],
+    "_widths": [
+        1009.4999328681447
+    ],
+    "_modelData": {
+        "connections": [
+            {
+                "startWord": {
+                    "uri": "src\\backend\\postmaster\\postmaster.c",
+                    "lineNumber": 458,
+                    "startColumn": 1,
+                    "endLineNumber": 458,
+                    "endColumn": 15,
+                    "word": "PostmasterMain",
+                    "x": 94,
+                    "y": 84,
+                    "hide": true,
+                    "height": 1,
+                    "width": 1
+                },
+                "endWord": {
+                    "uri": "src\\include\\postmaster\\postmaster.h",
+                    "lineNumber": 38,
+                    "startColumn": 12,
+                    "endLineNumber": 38,
+                    "endColumn": 26,
+                    "word": "",
+                    "x": 1251.4896240234375,
+                    "y": 252,
+                    "hide": false,
+                    "height": 19,
+                    "width": 108
+                },
+                "id": "a93626a6-6fb5-414f-a5b6-95ea5e933cd3",
+                "startAnchor": {
+                    "x": 95,
+                    "y": 84.57308072525507
+                },
+                "endAnchor": {
+                    "x": 1251.4896240234375,
+                    "y": 253.6072816724522
+                },
+                "startControl": {
+                    "x": 126.66357019618876,
+                    "y": 84.57308072525507
+                },
+                "endControl": {
+                    "x": 1207.952215003678,
+                    "y": 253.6072816724522
+                },
+                "arrow": {
+                    "angle": 0,
+                    "x": 1239.4896240234375,
+                    "y": 253.6072816724522
+                }
+            },
+            {
+                "startWord": {
+                    "uri": "src\\backend\\postmaster\\postmaster.c",
+                    "lineNumber": 465,
+                    "startColumn": 30,
+                    "endLineNumber": 465,
+                    "endColumn": 36,
+                    "word": "getpid",
+                    "x": 94,
+                    "y": 84,
+                    "hide": true,
+                    "height": 1,
+                    "width": 1
+                },
+                "endWord": {
+                    "uri": "file:///usr/include/unistd.h",
+                    "lineNumber": 628,
+                    "startColumn": 16,
+                    "endLineNumber": 628,
+                    "endColumn": 22,
+                    "word": "",
+                    "x": 209,
+                    "y": 1279.3333740234375,
+                    "hide": false,
+                    "height": 19,
+                    "width": 47
+                },
+                "id": "22bb6e55-8f78-47d1-baf5-bd7fb8823144",
+                "startAnchor": {
+                    "x": 94.55729310628459,
+                    "y": 85
+                },
+                "endAnchor": {
+                    "x": 231.41143098059285,
+                    "y": 1279.3333740234375
+                },
+                "startControl": {
+                    "x": 94.55729310628459,
+                    "y": 116.79196638236576
+                },
+                "endControl": {
+                    "x": 231.41143098059285,
+                    "y": 1235.6194202476845
+                },
+                "arrow": {
+                    "angle": 1.5707963267948966,
+                    "x": 231.41143098059285,
+                    "y": 1267.3333740234375
+                }
+            }
+        ],
+        "annotations": [],
+        "highlights": []
+    }
+}

@@ -3414,11 +3414,11 @@ InitializeOneGUCOption(struct config_generic * gconf)
 bool
 SelectConfigFiles(const char *userDoption, const char *progname)
 {
-	char	   *configdir;
-	char	   *fname;
-	struct stat stat_buf;
+	char	   *configdir;  // 配置文件目录路径
+	char	   *fname;      // 临时文件名变量
+	struct stat stat_buf;   // 用于文件状态检查
 
-	/* configdir is -D option, or $PGDATA if no -D */
+	/* 如果指定了-D选项则使用其值，否则使用PGDATA环境变量 */ 
 	if (userDoption)
 		configdir = make_absolute_path(userDoption);
 	else
@@ -3428,7 +3428,7 @@ SelectConfigFiles(const char *userDoption, const char *progname)
 	 * Find the configuration file: if config_file was specified on the
 	 * command line, use it, else use configdir/postgresql.conf.  In any case
 	 * ensure the result is an absolute path, so that it will be interpreted
-	 * the same way by future backends.
+	 * the same way by future backends. 当解析命令行参数时，如果指定了 --config-file 选项，会直接赋值给 ConfigFileName。
 	 */
 	if (ConfigFileName)
 		fname = make_absolute_path(ConfigFileName);
@@ -3436,7 +3436,7 @@ SelectConfigFiles(const char *userDoption, const char *progname)
 	{
 		fname = guc_malloc(FATAL,
 						   strlen(configdir) + strlen(CONFIG_FILENAME) + 2);
-		sprintf(fname, "%s/%s", configdir, CONFIG_FILENAME);
+		sprintf(fname, "%s/%s", configdir, CONFIG_FILENAME);  // 构建配置文件的完整路径，sprintf会把路径和文件名拼接起来。
 	}
 	else
 	{
@@ -3451,11 +3451,11 @@ SelectConfigFiles(const char *userDoption, const char *progname)
 	 * Set the ConfigFileName GUC variable to its final value, ensuring that
 	 * it can't be overridden later.
 	 */
-	SetConfigOption("config_file", fname, PGC_POSTMASTER, PGC_S_OVERRIDE);
+	SetConfigOption("config_file", fname, PGC_POSTMASTER, PGC_S_OVERRIDE);  // 设置GUC变量，给ConfigFileName赋值
 	free(fname);
 
 	/*
-	 * Now read the config file for the first time.
+	 * Now read the config file for the first time.  检查文件是否可读
 	 */
 	if (stat(ConfigFileName, &stat_buf) != 0)
 	{
@@ -3464,14 +3464,14 @@ SelectConfigFiles(const char *userDoption, const char *progname)
 		return false;
 	}
 
-	ProcessConfigFile(PGC_POSTMASTER);
+	ProcessConfigFile(PGC_POSTMASTER);  // 读取并解析配置文件中的所有配置项，并将这些配置项应用到当前的 PostgreSQL 实例中。
 
 	/*
 	 * If the data_directory GUC variable has been set, use that as DataDir;
 	 * otherwise use configdir if set; else punt.
 	 *
 	 * Note: SetDataDir will copy and absolute-ize its argument, so we don't
-	 * have to.
+	 * have to.  确定 PostgreSQL 数据库系统的数据目录
 	 */
 	if (data_directory)
 		SetDataDir(data_directory);
@@ -3493,14 +3493,14 @@ SelectConfigFiles(const char *userDoption, const char *progname)
 	 * it's because the EXEC_BACKEND case needs DataDir to be transmitted to
 	 * child backends specially.  XXX is that still true?  Given that we now
 	 * chdir to DataDir, EXEC_BACKEND can read the config file without knowing
-	 * DataDir in advance.)
+	 * DataDir in advance.)  将最终确定的 DataDir的值设置回GUC变量data_directory中
 	 */
 	SetConfigOption("data_directory", DataDir, PGC_POSTMASTER, PGC_S_OVERRIDE);
 
 	/*
-	 * Figure out where pg_hba.conf is, and make sure the path is absolute.
+	 * Figure out where pg_hba.conf is, and make sure the path is absolute. 确定 pg_hba.conf 文件的路径，并设置GUC变量 hba_file
 	 */
-	if (HbaFileName)
+	if (HbaFileName)  // 该文件决定了哪些 IP 地址、主机名或网络范围的客户端可以连接到 PostgreSQL 服务器
 		fname = make_absolute_path(HbaFileName);
 	else if (configdir)
 	{
@@ -3521,9 +3521,9 @@ SelectConfigFiles(const char *userDoption, const char *progname)
 	free(fname);
 
 	/*
-	 * Likewise for pg_ident.conf.
+	 * Likewise for pg_ident.conf.  确定 pg_ident.conf 文件的路径，并设置GUC变量 ident_file
 	 */
-	if (IdentFileName)
+	if (IdentFileName)  // 定义了如何将操作系统用户（如 Linux 或 Windows 用户）映射到 PostgreSQL 数据库用户。
 		fname = make_absolute_path(IdentFileName);
 	else if (configdir)
 	{

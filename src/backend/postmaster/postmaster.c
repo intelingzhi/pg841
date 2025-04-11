@@ -281,7 +281,7 @@ typedef enum
 	PM_NO_CHILDREN				/* all important children have exited */
 } PMState;
 
-static PMState pmState = PM_INIT;
+static PMState pmState = PM_INIT;  // 当前的状态
 
 bool		ClientAuthInProgress = false;		/* T during new-client
 												 * authentication */
@@ -312,48 +312,48 @@ extern int	optreset;			/* might not be declared by system headers */
 /*
  * postmaster.c - function prototypes
  */
-static void getInstallationPaths(const char *argv0);
-static void checkDataDir(void);
+static void getInstallationPaths(const char *argv0);  // 获取pg安装路径
+static void checkDataDir(void);  // 检查数据目录是否有效
 
 #ifdef USE_BONJOUR
 static void reg_reply(DNSServiceRegistrationReplyErrorType errorCode,
-		  void *context);
+		  void *context);     // Bonjour 服务注册的回调函数（不知道啥玩意，先留着​）
 #endif
-static void pmdaemonize(void);
-static Port *ConnCreate(int serverFd);
-static void ConnFree(Port *port);
-static void reset_shared(int port);
-static void SIGHUP_handler(SIGNAL_ARGS);
-static void pmdie(SIGNAL_ARGS);
-static void reaper(SIGNAL_ARGS);
-static void sigusr1_handler(SIGNAL_ARGS);
-static void dummy_handler(SIGNAL_ARGS);
-static void CleanupBackend(int pid, int exitstatus);
-static void HandleChildCrash(int pid, int exitstatus, const char *procname);
+static void pmdaemonize(void);             // 将 postmaster 进程变为守护进程
+static Port *ConnCreate(int serverFd);     // 创建连接
+static void ConnFree(Port *port);          // 释放连接
+static void reset_shared(int port);        // 重置共享内存
+static void SIGHUP_handler(SIGNAL_ARGS);   // 处理 SIGHUP 信号，通常用于重新加载配置
+static void pmdie(SIGNAL_ARGS);            // 处理终止信号，用于优雅关闭 postmaster
+static void reaper(SIGNAL_ARGS);           // 处理子进程结束信号，清理子进程资源
+static void sigusr1_handler(SIGNAL_ARGS);  // 处理 SIGUSR1 信号，通常用于内部通信
+static void dummy_handler(SIGNAL_ARGS);    // 空信号处理函数，用于忽略某些信号
+static void CleanupBackend(int pid, int exitstatus);  // 清理后端进程资源
+static void HandleChildCrash(int pid, int exitstatus, const char *procname);   // 处理子进程崩溃
 static void LogChildExit(int lev, const char *procname,
-			 int pid, int exitstatus);
-static void PostmasterStateMachine(void);
-static void BackendInitialize(Port *port);
-static int	BackendRun(Port *port);
-static void ExitPostmaster(int status);
-static int	ServerLoop(void);
-static int	BackendStartup(Port *port);
-static int	ProcessStartupPacket(Port *port, bool SSLdone);
-static void processCancelRequest(Port *port, void *pkt);
-static int	initMasks(fd_set *rmask);
-static void report_fork_failure_to_client(Port *port, int errnum);
-static enum CAC_state canAcceptConnections(void);
-static long PostmasterRandom(void);
-static void RandomSalt(char *md5Salt);
-static void signal_child(pid_t pid, int signal);
-static void SignalSomeChildren(int signal, bool only_autovac);
+			 int pid, int exitstatus);         // 记录子进程退出日志
+static void PostmasterStateMachine(void);      // postmaster 状态机，管理启动、关闭等状态
+static void BackendInitialize(Port *port);     // 初始化后端进程
+static int	BackendRun(Port *port);            // 运行后端进程
+static void ExitPostmaster(int status);        // 退出 postmaster 进程
+static int	ServerLoop(void);                  // 主服务器循环，处理连接请求
+static int	BackendStartup(Port *port);        // 启动后端进程
+static int	ProcessStartupPacket(Port *port, bool SSLdone);  // 处理客户端启动包
+static void processCancelRequest(Port *port, void *pkt);     // 处理取消请求
+static int	initMasks(fd_set *rmask);      // 初始化文件描述符集合
+static void report_fork_failure_to_client(Port *port, int errnum);   // 向客户端报告 fork 失败
+static enum CAC_state canAcceptConnections(void);   // 检查是否可以接受新连接
+static long PostmasterRandom(void);      // 生成随机数
+static void RandomSalt(char *md5Salt);   // 生成随机盐值
+static void signal_child(pid_t pid, int signal);                // 向子进程发送信号
+static void SignalSomeChildren(int signal, bool only_autovac);  // 向部分子进程发送信号
 
-#define SignalChildren(sig)			SignalSomeChildren(sig, false)
-#define SignalAutovacWorkers(sig)	SignalSomeChildren(sig, true)
-static int	CountChildren(void);
-static bool CreateOptsFile(int argc, char *argv[], char *fullprogname);
-static pid_t StartChildProcess(AuxProcType type);
-static void StartAutovacuumWorker(void);
+#define SignalChildren(sig)			SignalSomeChildren(sig, false)  // 向所有子进程发送信号
+#define SignalAutovacWorkers(sig)	SignalSomeChildren(sig, true)   // 仅向 autovacuum 子进程发送信号
+static int	CountChildren(void);    // 统计当前子进程数量
+static bool CreateOptsFile(int argc, char *argv[], char *fullprogname);   // 创建选项文件
+static pid_t StartChildProcess(AuxProcType type);  // 启动特定类型的子进程
+static void StartAutovacuumWorker(void);    // 启动 autovacuum 工作进程
 
 #ifdef EXEC_BACKEND
 
@@ -438,17 +438,17 @@ static bool save_backend_variables(BackendParameters *param, Port *port,
 					   HANDLE childProcess, pid_t childPid);
 #endif
 
-static void ShmemBackendArrayAdd(Backend *bn);
-static void ShmemBackendArrayRemove(Backend *bn);
+static void ShmemBackendArrayAdd(Backend *bn);        // 将后端进程添加到共享内存的后端数组中
+static void ShmemBackendArrayRemove(Backend *bn);     // 从共享内存的后端数组中移除后端进程
 #endif   /* EXEC_BACKEND */
 
-#define StartupDataBase()		StartChildProcess(StartupProcess)
-#define StartBackgroundWriter() StartChildProcess(BgWriterProcess)
-#define StartWalWriter()		StartChildProcess(WalWriterProcess)
+#define StartupDataBase()		StartChildProcess(StartupProcess)     // 启动数据库启动进程
+#define StartBackgroundWriter() StartChildProcess(BgWriterProcess)    // 启动后台写进程
+#define StartWalWriter()		StartChildProcess(WalWriterProcess)   // 启动 WAL 写进程
 
 /* Macros to check exit status of a child process */
-#define EXIT_STATUS_0(st)  ((st) == 0)
-#define EXIT_STATUS_1(st)  (WIFEXITED(st) && WEXITSTATUS(st) == 1)
+#define EXIT_STATUS_0(st)  ((st) == 0)         // 检查子进程是否正常退出（退出状态为 0）
+#define EXIT_STATUS_1(st)  (WIFEXITED(st) && WEXITSTATUS(st) == 1)  // 检查子进程是否以状态 1 退出
 
 
 /*
@@ -457,61 +457,61 @@ static void ShmemBackendArrayRemove(Backend *bn);
 int
 PostmasterMain(int argc, char *argv[])
 {
-	int			opt;
-	int			status;
-	char	   *userDoption = NULL;
-	int			i;
+	int			opt;                   // 命令行选项的临时变量
+	int			status;                // 状态码
+	char	   *userDoption = NULL;    // 用户指定的数据目录选项 实际为："/usr/local/pgsql-8.4.1/data"
+	int			i;                     // 循环变量
 
-	MyProcPid = PostmasterPid = getpid();
+	MyProcPid = PostmasterPid = getpid();  // 获取当前进程 ID 并赋值给全局变量
 
-	MyStartTime = time(NULL);
+	MyStartTime = time(NULL);   // 记录启动时间
 
-	IsPostmasterEnvironment = true;
+	IsPostmasterEnvironment = true;  // 标记当前环境为 postmaster 环境
 
 	/*
-	 * for security, no dir or file created can be group or other accessible
+	 * 出于安全考虑，确保创建的文件和目录不能被组或其他用户访问
 	 */
 	umask((mode_t) 0077);
 
 	/*
-	 * Fire up essential subsystems: memory management
+	 * 启动核心子系统：内存管理
 	 */
-	MemoryContextInit();
+	MemoryContextInit();  // 创建TopMemoryContext, ErrorContext
 
 	/*
-	 * By default, palloc() requests in the postmaster will be allocated in
-	 * the PostmasterContext, which is space that can be recycled by backends.
-	 * Allocated data that needs to be available to backends should be
-	 * allocated in TopMemoryContext.
+    * 默认情况下，postmaster进程中通过palloc()申请的内存会被分配在PostmasterContext中，这部分空间可以被后端进程回收。
+    * 若需在后端进程中长期保留的分配数据，则应分配在TopMemoryContext中。
+    * 作用：创建 PostmasterContext 内存上下文，作为 Postmaster 进程的内存池
+    *
 	 */
 	PostmasterContext = AllocSetContextCreate(TopMemoryContext,
 											  "Postmaster",
-											  ALLOCSET_DEFAULT_MINSIZE,
-											  ALLOCSET_DEFAULT_INITSIZE,
-											  ALLOCSET_DEFAULT_MAXSIZE);
-	MemoryContextSwitchTo(PostmasterContext);
+											  ALLOCSET_DEFAULT_MINSIZE,    // 最小分配大小
+											  ALLOCSET_DEFAULT_INITSIZE,   // 初始分配大小
+											  ALLOCSET_DEFAULT_MAXSIZE);   // 最大分配大小
+	MemoryContextSwitchTo(PostmasterContext);  // 切换到 PostmasterContext
 
 	/* Initialize paths to installation files */
-	getInstallationPaths(argv[0]);
+	getInstallationPaths(argv[0]);  // 获取安装路径
 
 	/*
 	 * Options setup
 	 */
-	InitializeGUCOptions();
+	InitializeGUCOptions();  // 初始化全局通用选项
 
 	opterr = 1;
 
 	/*
 	 * Parse command-line options.	CAUTION: keep this in sync with
 	 * tcop/postgres.c (the option sets should not conflict) and with the
-	 * common help() function in main/main.c.
+	 * common help() function in main/main.c.  解析命令行参数并配置参数
 	 */
 	while ((opt = getopt(argc, argv, "A:B:c:D:d:EeFf:h:ijk:lN:nOo:Pp:r:S:sTt:W:-:")) != -1)
 	{
 		switch (opt)
 		{
 			case 'A':
-				SetConfigOption("debug_assertions", optarg, PGC_POSTMASTER, PGC_S_ARGV);
+				SetConfigOption("debug_assertionsdebug_assertions", optarg, PGC_POSTMASTER, PGC_S_ARGV);
 				break;
 
 			case 'B':
@@ -674,7 +674,7 @@ PostmasterMain(int argc, char *argv[])
 	}
 
 	/*
-	 * Postmaster accepts no non-option switch arguments.
+	 * Postmaster accepts no non-option switch arguments.  postmaster 进程不接受非选项参数
 	 */
 	if (optind < argc)
 	{
@@ -687,21 +687,21 @@ PostmasterMain(int argc, char *argv[])
 
 	/*
 	 * Locate the proper configuration files and data directory, and read
-	 * postgresql.conf for the first time.
+	 * postgresql.conf for the first time.  读取配置文件的内容
 	 */
 	if (!SelectConfigFiles(userDoption, progname))
 		ExitPostmaster(2);
 
 	/* Verify that DataDir looks reasonable */
-	checkDataDir();
+	checkDataDir();  // 验证 PostgreSQL 数据目录的有效性和安全性
 
 	/* And switch working directory into it */
-	ChangeToDataDir();
+	ChangeToDataDir();  // 切换到data目录
 
 	/*
-	 * Check for invalid combinations of GUC settings.
+	 * Check for invalid combinations of GUC settings. 
 	 */
-	if (ReservedBackends >= MaxBackends)
+	if (ReservedBackends >= MaxBackends)  // 保留给超级用户的连接数小于总连接数
 	{
 		write_stderr("%s: superuser_reserved_connections must be less than max_connections\n", progname);
 		ExitPostmaster(1);
@@ -711,15 +711,15 @@ PostmasterMain(int argc, char *argv[])
 	 * Other one-time internal sanity checks can go here, if they are fast.
 	 * (Put any slow processing further down, after postmaster.pid creation.)
 	 */
-	if (!CheckDateTokenTables())
+	if (!CheckDateTokenTables())  // 日期解析表检查
 	{
 		write_stderr("%s: invalid datetoken tables, please fix\n", progname);
 		ExitPostmaster(1);
 	}
 
 	/*
-	 * Now that we are done processing the postmaster arguments, reset
-	 * getopt(3) library so that it will work correctly in subprocesses.
+	 * Now that we are done processing the postmaster arguments, reset 
+	 * getopt(3) library so that it will work correctly in subprocesses. 现在我们已经处理完 postmaster 的参数，重置 getopt(3) 库，以便它在子进程中能够正确工作。
 	 */
 	optind = 1;
 #ifdef HAVE_INT_OPTRESET
@@ -728,12 +728,12 @@ PostmasterMain(int argc, char *argv[])
 
 	/* For debugging: display postmaster environment */
 	{
-		extern char **environ;
+		extern char **environ;   // 字符串数组的指针
 		char	  **p;
 
 		ereport(DEBUG3,
 				(errmsg_internal("%s: PostmasterMain: initial environ dump:",
-								 progname)));
+								 progname)));  // 日志级别为 DEBUG3，表示非常详细的调试信息。
 		ereport(DEBUG3,
 			 (errmsg_internal("-----------------------------------------")));
 		for (p = environ; *p; ++p)
@@ -750,7 +750,7 @@ PostmasterMain(int argc, char *argv[])
 	 * will show the wrong PID.
 	 */
 	if (SilentMode)
-		pmdaemonize();
+		pmdaemonize();   // 将 postmaster 进程变为守护进程（daemon）
 
 	/*
 	 * Create lockfile for data directory.
@@ -761,7 +761,7 @@ PostmasterMain(int argc, char *argv[])
 	 * For the same reason, it's best to grab the TCP socket(s) before the
 	 * Unix socket.
 	 */
-	CreateDataDirLockFile(true);
+	CreateDataDirLockFile(true);  // 创建锁文件postmaster.pid
 
 	/*
 	 * If timezone is not set, determine what the OS uses.	(In theory this
@@ -771,12 +771,12 @@ PostmasterMain(int argc, char *argv[])
 	 * expect the pidfile to appear quickly.  Also, we avoid problems with
 	 * trying to locate the timezone files too early in initialization.)
 	 */
-	pg_timezone_initialize();
+	pg_timezone_initialize();  // 设置时区
 
 	/*
 	 * Likewise, init timezone_abbreviations if not already set.
 	 */
-	pg_timezone_abbrev_initialize();
+	pg_timezone_abbrev_initialize();  // 设置时区
 
 	/*
 	 * Initialize SSL library, if specified.
@@ -789,13 +789,13 @@ PostmasterMain(int argc, char *argv[])
 	/*
 	 * process any libraries that should be preloaded at postmaster start
 	 */
-	process_shared_preload_libraries();
+	process_shared_preload_libraries();  // 处理预加载共享库
 
 	/*
 	 * Remove old temporary files.	At this point there can be no other
 	 * Postgres processes running in this directory, so this should be safe.
 	 */
-	RemovePgTempFiles();
+	RemovePgTempFiles();  //　清理临时旧文件
 
 	/*
 	 * Establish input sockets.
@@ -803,18 +803,18 @@ PostmasterMain(int argc, char *argv[])
 	for (i = 0; i < MAXLISTEN; i++)
 		ListenSocket[i] = -1;
 
-	if (ListenAddresses)
+	if (ListenAddresses)  // 变量值为"localhost",于 postgresql.conf 中配置。
 	{
-		char	   *rawstring;
-		List	   *elemlist;
-		ListCell   *l;
-		int			success = 0;
+		char	   *rawstring;  // 存储 ListenAddresses 配置的副本，用于后续修改解析。
+		List	   *elemlist;   // ListenAddresses 可能包含多个地址（用逗号分隔），解析后每个地址会作为链表的一个节点。
+		ListCell   *l;          // 遍历 elemlist 链表的迭代器。
+		int			success = 0;  // 记录成功创建的监听套接字数量。
 
 		/* Need a modifiable copy of ListenAddresses */
-		rawstring = pstrdup(ListenAddresses);
+		rawstring = pstrdup(ListenAddresses);  // 创建 ListenAddresses 的可修改副本，函数来自 mcxt.c 的MemoryContextStrdup
 
 		/* Parse string into list of identifiers */
-		if (!SplitIdentifierString(rawstring, ',', &elemlist))
+		if (!SplitIdentifierString(rawstring, ',', &elemlist))   // 将 ListenAddresses 字符串按逗号分隔解析为链表
 		{
 			/* syntax error in list */
 			ereport(FATAL,
@@ -822,21 +822,21 @@ PostmasterMain(int argc, char *argv[])
 					 errmsg("invalid list syntax for \"listen_addresses\"")));
 		}
 
-		foreach(l, elemlist)
+		foreach(l, elemlist)  // 遍历解析后的地址链表
 		{
-			char	   *curhost = (char *) lfirst(l);
+			char	   *curhost = (char *) lfirst(l);   // 获取当前地址
 
-			if (strcmp(curhost, "*") == 0)
-				status = StreamServerPort(AF_UNSPEC, NULL,
-										  (unsigned short) PostPortNumber,
-										  UnixSocketDir,
-										  ListenSocket, MAXLISTEN);
-			else
-				status = StreamServerPort(AF_UNSPEC, curhost,
-										  (unsigned short) PostPortNumber,
-										  UnixSocketDir,
-										  ListenSocket, MAXLISTEN);
-			if (status == STATUS_OK)
+			if (strcmp(curhost, "*") == 0) // 如果地址为 "*"，表示监听所有网络接口
+				status = StreamServerPort(AF_UNSPEC, NULL,   // AF_UNSPEC 表示同时支持 IPv4 和 IPv6, NULL表示没有指定地址
+										  (unsigned short) PostPortNumber, // 监听端口号, 通常通过配置文件 postgresql.conf 或命令行参数 -p 来指定。
+										  UnixSocketDir,     // UnixSocketDir 表示 Unix 套接字目录，默认是""
+										  ListenSocket, MAXLISTEN);  // 将创建的套接字存储在 ListenSocket 数组中
+			else  // 否则监听指定地址
+				status = StreamServerPort(AF_UNSPEC, curhost,  // AF_UNSPEC 表示同时支持 IPv4 和 IPv6, curhost表示指定地址
+										  (unsigned short) PostPortNumber, // 监听端口号, 通常通过配置文件 postgresql.conf 或命令行参数 -p 来指定。
+										  UnixSocketDir,        // UnixSocketDir 表示 Unix 套接字目录，默认是""
+										  ListenSocket, MAXLISTEN);  // 将创建的套接字存储在 ListenSocket 数组中
+			if (status == STATUS_OK)  // 如果成功创建套接字，增加成功计数
 				success++;
 			else
 				ereport(WARNING,
@@ -844,15 +844,15 @@ PostmasterMain(int argc, char *argv[])
 								curhost)));
 		}
 
-		if (!success && list_length(elemlist))
+		if (!success && list_length(elemlist))  // 如果配置了监听地址但未能成功创建任何套接字，将无法接受客户端连接
 			ereport(FATAL,
 					(errmsg("could not create any TCP/IP sockets")));
 
-		list_free(elemlist);
-		pfree(rawstring);
+		list_free(elemlist);  // 释放内存
+		pfree(rawstring);  // 释放内存
 	}
 
-#ifdef USE_BONJOUR
+#ifdef USE_BONJOUR  // 为 macos 设置，默认不开启
 	/* Register for Bonjour only if we opened TCP socket(s) */
 	if (ListenSocket[0] != -1 && bonjour_name != NULL)
 	{
@@ -866,11 +866,11 @@ PostmasterMain(int argc, char *argv[])
 	}
 #endif
 
-#ifdef HAVE_UNIX_SOCKETS
-	status = StreamServerPort(AF_UNIX, NULL,
-							  (unsigned short) PostPortNumber,
-							  UnixSocketDir,
-							  ListenSocket, MAXLISTEN);
+#ifdef HAVE_UNIX_SOCKETS  // 为 unix 套接字设置
+	status = StreamServerPort(AF_UNIX, NULL,   // 使用 Unix 域套接字，不指定特定地址
+							  (unsigned short) PostPortNumber,  // 监听端口号, 通常通过配置文件 postgresql.conf 或命令行参数 -p 来指定。
+							  UnixSocketDir,   // Unix 域套接字的目录路径
+							  ListenSocket, MAXLISTEN);  // 将创建的套接字存储在 ListenSocket 数组中
 	if (status != STATUS_OK)
 		ereport(WARNING,
 				(errmsg("could not create Unix-domain socket")));
@@ -879,25 +879,25 @@ PostmasterMain(int argc, char *argv[])
 	/*
 	 * check that we have some socket to listen on
 	 */
-	if (ListenSocket[0] == -1)
+	if (ListenSocket[0] == -1)  // 如果没有成功创建任何监听套接字
 		ereport(FATAL,
 				(errmsg("no socket created for listening")));
 
 	/*
-	 * Set up shared memory and semaphores.
+	 * Set up shared memory and semaphores. PostPortNumber 是监听的端口号。这个参数被传递给 reset_shared 函数，用于在共享内存中标识当前实例的监听端口。
 	 */
-	reset_shared(PostPortNumber);
+	reset_shared(PostPortNumber);   // 初始化的共享内存和信号量。共享内存是 PostgreSQL 中用于存储全局数据（如缓冲区、锁表等）的关键机制，而信号量用于进程间的同步。
 
 	/*
 	 * Estimate number of openable files.  This must happen after setting up
 	 * semaphores, because on some platforms semaphores count as open files.
 	 */
-	set_max_safe_fds();
+	set_max_safe_fds();  // 估算当前系统环境下 可以安全打开的文件描述符
 
 	/*
 	 * Initialize the list of active backends.
 	 */
-	BackendList = DLNewList();
+	BackendList = DLNewList();  // 存储当前所有活动后端进程的列表
 
 #ifdef WIN32
 
@@ -929,7 +929,7 @@ PostmasterMain(int argc, char *argv[])
 	 * Record postmaster options.  We delay this till now to avoid recording
 	 * bogus options (eg, NBuffers too high for available memory).
 	 */
-	if (!CreateOptsFile(argc, argv, my_exec_path))
+	if (!CreateOptsFile(argc, argv, my_exec_path)) // 将 postmaster 进程的启动选项记录到一个文件中: /usr/local/pgsql-8.4.1/data/postmaster.opts 
 		ExitPostmaster(1);
 
 #ifdef EXEC_BACKEND
@@ -940,14 +940,14 @@ PostmasterMain(int argc, char *argv[])
 	/*
 	 * Write the external PID file if requested
 	 */
-	if (external_pid_file)
+	if (external_pid_file)  // 检查是否指定了外部 PID 文件路径。如果未指定 external_pid_file，PostgreSQL 仍然会在数据目录中创建 postmaster.pid 文件，但不会创建额外的外部 PID 文件。
 	{
-		FILE	   *fpidfile = fopen(external_pid_file, "w");
+		FILE	   *fpidfile = fopen(external_pid_file, "w");  // 以写入模式打开指定的 PID 文件
 
-		if (fpidfile)
+		if (fpidfile)   // 如果文件成功打开
 		{
-			fprintf(fpidfile, "%d\n", MyProcPid);
-			fclose(fpidfile);
+			fprintf(fpidfile, "%d\n", MyProcPid);  // 将当前 postmaster 进程的 PID 写入文件
+			fclose(fpidfile);  // 关闭文件
 			/* Should we remove the pid file on postmaster exit? */
 		}
 		else
@@ -964,19 +964,19 @@ PostmasterMain(int argc, char *argv[])
 	 * postmaster/autovacuum.c, postmaster/pgarch.c, postmaster/pgstat.c, and
 	 * postmaster/syslogger.c.
 	 */
-	pqinitmask();
-	PG_SETMASK(&BlockSig);
+	pqinitmask();   // 初始化信号掩码，用于后续的信号处理
+	PG_SETMASK(&BlockSig);  // 设置信号掩码，阻塞所有信号
 
-	pqsignal(SIGHUP, SIGHUP_handler);	/* reread config file and have
+	pqsignal(SIGHUP, SIGHUP_handler);	/* reread config file and have  重新读取配置文件，并通知子进程执行相同操作
 										 * children do same */
-	pqsignal(SIGINT, pmdie);	/* send SIGTERM and shut down */
-	pqsignal(SIGQUIT, pmdie);	/* send SIGQUIT and die */
-	pqsignal(SIGTERM, pmdie);	/* wait for children and shut down */
+	pqsignal(SIGINT, pmdie);	/* send SIGTERM and shut down, 发送 SIGTERM 并关闭数据库 */
+	pqsignal(SIGQUIT, pmdie);	/* send SIGQUIT and die, 发送 SIGQUIT 并终止进程 */
+	pqsignal(SIGTERM, pmdie);	/* wait for children and shut down, 等待子进程结束并关闭数据库 */
 	pqsignal(SIGALRM, SIG_IGN); /* ignored */
 	pqsignal(SIGPIPE, SIG_IGN); /* ignored */
-	pqsignal(SIGUSR1, sigusr1_handler); /* message from child process */
-	pqsignal(SIGUSR2, dummy_handler);	/* unused, reserve for children */
-	pqsignal(SIGCHLD, reaper);	/* handle child termination */
+	pqsignal(SIGUSR1, sigusr1_handler); /* message from child process, 处理来自子进程的消息 */
+	pqsignal(SIGUSR2, dummy_handler);	/* unused, reserve for children, 未使用，保留给子进程 */
+	pqsignal(SIGCHLD, reaper);	/* handle child termination, 处理子进程终止 */
 	pqsignal(SIGTTIN, SIG_IGN); /* ignored */
 	pqsignal(SIGTTOU, SIG_IGN); /* ignored */
 	/* ignore SIGXFSZ, so that ulimit violations work like disk full */
@@ -987,7 +987,7 @@ PostmasterMain(int argc, char *argv[])
 	/*
 	 * If enabled, start up syslogger collection subprocess
 	 */
-	SysLoggerPID = SysLogger_Start();
+	SysLoggerPID = SysLogger_Start();   // 启动系统日志收集子进程，用于收集和记录 PostgreSQL 的日志信息
 
 	/*
 	 * Reset whereToSendOutput from DestDebug (its starting state) to
@@ -996,23 +996,23 @@ PostmasterMain(int argc, char *argv[])
 	 * fully launched, since startup failures may as well be reported to
 	 * stderr.
 	 */
-	whereToSendOutput = DestNone;
+	whereToSendOutput = DestNone;  // 将日志输出目标从初始的 DestDebug 重置为 DestNone，确保日志消息不会默认输出到 stderr，除非 Log_destination 配置允许
 
 	/*
 	 * Initialize stats collection subsystem (this does NOT start the
 	 * collector process!)
 	 */
-	pgstat_init();
+	pgstat_init();  // 初始化统计信息收集子系统，但不会启动统计信息收集进程
 
 	/*
 	 * Initialize the autovacuum subsystem (again, no process start yet)
 	 */
-	autovac_init();
+	autovac_init();  // 初始化自动清理子系统，但不会启动自动清理进程
 
 	/*
 	 * Load configuration files for client authentication.
 	 */
-	if (!load_hba())
+	if (!load_hba())  // 加载 pg_hba.conf 文件，该文件定义了客户端连接认证规则
 	{
 		/*
 		 * It makes no sense to continue if we fail to load the HBA file,
@@ -1021,28 +1021,28 @@ PostmasterMain(int argc, char *argv[])
 		ereport(FATAL,
 				(errmsg("could not load pg_hba.conf")));
 	}
-	load_ident();
+	load_ident();  // 加载 pg_ident.conf 文件，该文件定义了用户映射规则
 
 	/*
 	 * Remember postmaster startup time
 	 */
-	PgStartTime = GetCurrentTimestamp();
+	PgStartTime = GetCurrentTimestamp();    // 获取当前时间戳，并将其存储在全局变量 PgStartTime 中。
 	/* PostmasterRandom wants its own copy */
-	gettimeofday(&random_start_time, NULL);
+	gettimeofday(&random_start_time, NULL); // 获取当前时间，并将其存储在 random_start_time 结构体中。
 
 	/*
 	 * We're ready to rock and roll...
 	 */
-	StartupPID = StartupDataBase();
-	Assert(StartupPID != 0);
-	pmState = PM_STARTUP;
+	StartupPID = StartupDataBase(); // 启动数据库初始化进程，返回其进程 ID
+	Assert(StartupPID != 0);  // 确保启动进程的 PID 不为 0，否则表示启动失败
+	pmState = PM_STARTUP;  // 将 postmaster 状态设置为 PM_STARTUP，表示正在启动数据库
 
-	status = ServerLoop();
+	status = ServerLoop();  // 进入主循环，处理客户端连接和其他后台任务
 
 	/*
 	 * ServerLoop probably shouldn't ever return, but if it does, close down.
 	 */
-	ExitPostmaster(status != STATUS_OK);
+	ExitPostmaster(status != STATUS_OK);  // 如果 ServerLoop 返回，根据状态码决定是否正常退出
 
 	return 0;					/* not reached */
 }
@@ -1303,19 +1303,19 @@ pmdaemonize(void)
 static int
 ServerLoop(void)
 {
-	fd_set		readmask;
-	int			nSockets;
-	time_t		now,
-				last_touch_time;
+	fd_set		readmask;    // 用于存储监听的文件描述符集合
+	int			nSockets;    // 监听的文件描述符数量，这个值会在后续select函数中用到
+	time_t		now,         // 当前时间
+				last_touch_time;  // 上次更新或者修改 socket 文件的时间
 
-	last_touch_time = time(NULL);
+	last_touch_time = time(NULL);  // 初始化更新或者修改 socket 文件的时间
 
-	nSockets = initMasks(&readmask);
+	nSockets = initMasks(&readmask);  // 初始化文件描述符集合，并返回需要监听的文件描述符数量
 
 	for (;;)
 	{
-		fd_set		rmask;
-		int			selres;
+		fd_set		rmask;    // 用于select()调用的临时文件描述符集合
+		int			selres;   // 存储select()系统调用的返回结果
 
 		/*
 		 * Wait for a connection request to arrive.
@@ -1327,22 +1327,22 @@ ServerLoop(void)
 		 * any new connections, so we don't call select() at all; just sleep
 		 * for a little bit with signals unblocked.
 		 */
-		memcpy((char *) &rmask, (char *) &readmask, sizeof(fd_set));
+		memcpy((char *) &rmask, (char *) &readmask, sizeof(fd_set));  // 复制文件描述符集合，创建当前循环的监听副本
 
-		PG_SETMASK(&UnBlockSig);
+		PG_SETMASK(&UnBlockSig);  // 临时解除信号阻塞（默认是阻塞所有信号）
 
 		if (pmState == PM_WAIT_DEAD_END)
 		{
 			pg_usleep(100000L); /* 100 msec seems reasonable */
-			selres = 0;
+			selres = 0;  /* 模拟select返回0个就绪描述符 */
 		}
 		else
 		{
 			/* must set timeout each time; some OSes change it! */
 			struct timeval timeout;
 
-			timeout.tv_sec = 60;
-			timeout.tv_usec = 0;
+			timeout.tv_sec = 60;   // 60秒超时
+			timeout.tv_usec = 0;   // 微秒设为0
 
 			selres = select(nSockets, &rmask, NULL, NULL, &timeout);
 		}
@@ -1351,9 +1351,9 @@ ServerLoop(void)
 		 * Block all signals until we wait again.  (This makes it safe for our
 		 * signal handlers to do nontrivial work.)
 		 */
-		PG_SETMASK(&BlockSig);
+		PG_SETMASK(&BlockSig);  // 再次阻塞所有信号
 
-		/* Now check the select() result */
+		/* Now check the select() result （select发生错误）*/
 		if (selres < 0)
 		{
 			if (errno != EINTR && errno != EWOULDBLOCK)
@@ -1367,7 +1367,7 @@ ServerLoop(void)
 
 		/*
 		 * New connection pending on any of our sockets? If so, fork a child
-		 * process to deal with it.
+		 * process to deal with it.  准备接受客户端连接
 		 */
 		if (selres > 0)
 		{
@@ -1377,11 +1377,11 @@ ServerLoop(void)
 			{
 				if (ListenSocket[i] == -1)
 					break;
-				if (FD_ISSET(ListenSocket[i], &rmask))
+				if (FD_ISSET(ListenSocket[i], &rmask))  // 检查到有新的socket连接请求
 				{
-					Port	   *port;
+					Port	   *port;     // 用于存储新连接的端口信息
 
-					port = ConnCreate(ListenSocket[i]);
+					port = ConnCreate(ListenSocket[i]);   // 创建一个新的连接端口
 					if (port)
 					{
 						BackendStartup(port);
@@ -1470,21 +1470,21 @@ initMasks(fd_set *rmask)
 	int			maxsock = -1;
 	int			i;
 
-	FD_ZERO(rmask);
+	FD_ZERO(rmask);   // 清空文件描述符集合
 
-	for (i = 0; i < MAXLISTEN; i++)
+	for (i = 0; i < MAXLISTEN; i++)  // 遍历所有预定义的监听套接字
 	{
-		int			fd = ListenSocket[i];
+		int			fd = ListenSocket[i];  // 默认配置下，实例中为[3, 4, -1, -1, -1......]
 
-		if (fd == -1)
+		if (fd == -1)  // -1 表示无效套接字
 			break;
-		FD_SET		(fd, rmask);
+		FD_SET		(fd, rmask);  // 将套接字加入监听集合
 
-		if (fd > maxsock)
+		if (fd > maxsock)  // 跟踪最大描述符值
 			maxsock = fd;
 	}
 
-	return maxsock + 1;
+	return maxsock + 1;  // 返回值为5
 }
 
 
@@ -1895,7 +1895,7 @@ canAcceptConnections(void)
 
 
 /*
- * ConnCreate -- create a local connection data structure
+ * ConnCreate -- create a local connection data structure  创建本地连接
  */
 static Port *
 ConnCreate(int serverFd)
@@ -4255,53 +4255,53 @@ CountChildren(void)
 static pid_t
 StartChildProcess(AuxProcType type)
 {
-	pid_t		pid;
-	char	   *av[10];
-	int			ac = 0;
-	char		typebuf[32];
+	pid_t		pid;      // 用于记录子进程的 PID
+	char	   *av[10];   // 命令行参数数组
+	int			ac = 0;   // 参数计数器
+	char		typebuf[32];  // 用于存储进程类型的字符串缓冲区
 
 	/*
-	 * Set up command-line arguments for subprocess
+	 * Set up command-line arguments for subprocess  设置子进程的命令行参数
 	 */
-	av[ac++] = "postgres";
+	av[ac++] = "postgres";  // 第一个参数是程序名称
 
 #ifdef EXEC_BACKEND
-	av[ac++] = "--forkboot";
+	av[ac++] = "--forkboot";  // 如果是 EXEC_BACKEND 模式，添加 --forkboot 参数
 	av[ac++] = NULL;			/* filled in by postmaster_forkexec */
 #endif
 
-	snprintf(typebuf, sizeof(typebuf), "-x%d", type);
-	av[ac++] = typebuf;
+	snprintf(typebuf, sizeof(typebuf), "-x%d", type);  // 将进程类型转换为字符串
+	av[ac++] = typebuf;  // 添加进程类型参数
 
-	av[ac] = NULL;
-	Assert(ac < lengthof(av));
+	av[ac] = NULL;  // 参数数组以 NULL 结尾
+	Assert(ac < lengthof(av));  // 确保参数数量不超过数组长度
 
 #ifdef EXEC_BACKEND
-	pid = postmaster_forkexec(ac, av);
+	pid = postmaster_forkexec(ac, av);   // 在 EXEC_BACKEND 模式下启动子进程
 #else							/* !EXEC_BACKEND */
-	pid = fork_process();
+	pid = fork_process();   // 在非 EXEC_BACKEND 模式下，使用 fork 创建子进程
 
 	if (pid == 0)				/* child */
 	{
-		IsUnderPostmaster = true;		/* we are a postmaster subprocess now */
+		IsUnderPostmaster = true;		/* we are a postmaster subprocess now   标记当前进程为 postmaster 的子进程  */
 
-		/* Close the postmaster's sockets */
+		/* Close the postmaster's sockets 关闭 postmaster 的套接字 */
 		ClosePostmasterPorts(false);
 
-		/* Lose the postmaster's on-exit routines and port connections */
+		/* Lose the postmaster's on-exit routines and port connections 清除 postmaster 的退出例程和端口连接 */
 		on_exit_reset();
 
-		/* Release postmaster's working memory context */
+		/* Release postmaster's working memory context 释放 postmaster 的工作内存上下文*/
 		MemoryContextSwitchTo(TopMemoryContext);
 		MemoryContextDelete(PostmasterContext);
 		PostmasterContext = NULL;
 
-		AuxiliaryProcessMain(ac, av);
-		ExitPostmaster(0);
+		AuxiliaryProcessMain(ac, av);  // 执行子进程的主函数
+		ExitPostmaster(0);  // 子进程正常退出
 	}
 #endif   /* EXEC_BACKEND */
 
-	if (pid < 0)
+	if (pid < 0)  // 父进程中，fork 失败
 	{
 		/* in parent, fork failed */
 		int			save_errno = errno;

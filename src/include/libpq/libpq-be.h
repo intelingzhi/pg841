@@ -93,46 +93,46 @@ typedef struct
 #endif
 
 /*
- * This is used by the postmaster in its communication with frontends.	It
- * contains all state information needed during this communication before the
- * backend is run.	The Port structure is kept in malloc'd memory and is
- * still available when a backend is running (see MyProcPort).	The data
- * it points to must also be malloc'd, or else palloc'd in TopMemoryContext,
- * so that it survives into PostgresMain execution!
+ * @struct Port
+ * 该结构体用于存储与客户端连接相关的所有状态信息，在后端运行之前的通信过程中使用。
+ * 它被存储在动态分配的内存中，后端运行时仍然可用。
+ * 结构体中的指针成员指向的数据也必须是动态分配的，或者在 TopMemoryContext 中使用 palloc 分配，
+ * 以确保在 PostgresMain 执行期间数据不会丢失。
+ * 
  */
 
 typedef struct Port
 {
-	int			sock;			/* File descriptor */
-	ProtocolVersion proto;		/* FE/BE protocol version */
-	SockAddr	laddr;			/* local addr (postmaster) */
-	SockAddr	raddr;			/* remote addr (client) */
-	char	   *remote_host;	/* name (or ip addr) of remote host */
-	char	   *remote_port;	/* text rep of remote port */
-	CAC_state	canAcceptConnections;	/* postmaster connection status */
+    int         sock;           /* 连接的文件描述符 */
+    ProtocolVersion proto;      /* 前端/后端协议版本 */
+    SockAddr    laddr;          /* 本地地址（Postmaster） */
+    SockAddr    raddr;          /* 远程地址（客户端） */
+    char       *remote_host;    /* 远程主机的名称（或 IP 地址） */
+    char       *remote_port;    /* 远程端口的文本表示 */
+    CAC_state   canAcceptConnections; /* Postmaster 连接状态 */
 
 	/*
 	 * Information that needs to be saved from the startup packet and passed
 	 * into backend execution.	"char *" fields are NULL if not set.
 	 * guc_options points to a List of alternating option names and values.
 	 */
-	char	   *database_name;
-	char	   *user_name;
-	char	   *cmdline_options;
-	List	   *guc_options;
+    char       *database_name;  /* 数据库名称 */
+    char       *user_name;      /* 用户名称 */
+    char       *cmdline_options; /* 命令行选项 */
+    List       *guc_options;    /* GUC 选项列表 */
 
 	/*
 	 * Information that needs to be held during the authentication cycle.
 	 */
-	HbaLine    *hba;
-	char		md5Salt[4];		/* Password salt */
+    HbaLine    *hba;            /* HBA 配置行 */
+    char        md5Salt[4];     /* 密码盐 */
 
 	/*
 	 * Information that really has no business at all being in struct Port,
 	 * but since it gets used by elog.c in the same way as database_name and
 	 * other members of this struct, we may as well keep it here.
 	 */
-	TimestampTz SessionStartTime;		/* backend start time */
+	TimestampTz SessionStartTime;		/* 后端启动时间 */
 
 	/*
 	 * TCP keepalive settings.
@@ -141,12 +141,12 @@ typedef struct Port
 	 * if AF_UNIX or using the default. Also, -1 in a default value means we
 	 * were unable to find out the default (getsockopt failed).
 	 */
-	int			default_keepalives_idle;
-	int			default_keepalives_interval;
-	int			default_keepalives_count;
-	int			keepalives_idle;
-	int			keepalives_interval;
-	int			keepalives_count;
+    int         default_keepalives_idle;    /* 默认的 TCP 保活空闲时间 */
+    int         default_keepalives_interval; /* 默认的 TCP 保活间隔时间 */
+    int         default_keepalives_count;   /* 默认的 TCP 保活重试次数 */
+    int         keepalives_idle;            /* 当前的 TCP 保活空闲时间 */
+    int         keepalives_interval;        /* 当前的 TCP 保活间隔时间 */
+    int         keepalives_count;           /* 当前的 TCP 保活重试次数 */
 
 #if defined(ENABLE_GSS) || defined(ENABLE_SSPI)
 

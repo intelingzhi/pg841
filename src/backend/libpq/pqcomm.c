@@ -242,31 +242,31 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 				 char *unixSocketName,
 				 int ListenSocket[], int MaxListen)
 {
-	int			fd,
-				err;
-	int			maxconn;
-	int			ret;
-	char		portNumberStr[32];
-	const char *familyDesc;
-	char		familyDescBuf[64];
-	char	   *service;
-	struct addrinfo *addrs = NULL,
-			   *addr;
-	struct addrinfo hint;
-	int			listen_index = 0;
-	int			added = 0;
+	int			fd,       // 文件描述符
+				err;      // 错误码
+	int			maxconn;  // 最大连接数
+	int			ret;      // 返回值
+	char		portNumberStr[32];   // 端口号字符串
+	const char *familyDesc;          // 地址族描述
+	char		familyDescBuf[64];   // 地址族描述缓冲区
+	char	   *service;             // 服务名称或路径
+	struct addrinfo *addrs = NULL,   // 地址信息链表
+			   *addr;   // 当前地址信息
+	struct addrinfo hint;   // 地址信息提示
+	int			listen_index = 0;  // 监听套接字数组索引
+	int			added = 0;   // 已添加的套接字数量
 
 #if !defined(WIN32) || defined(IPV6_V6ONLY)
-	int			one = 1;
+	int			one = 1;  // 用于设置套接字选项，后续setsockopt中会使用到
 #endif
 
-	/* Initialize hint structure */
+	/* Initialize hint structure，初始化 hint 结构体 */
 	MemSet(&hint, 0, sizeof(hint));
-	hint.ai_family = family;
-	hint.ai_flags = AI_PASSIVE;
-	hint.ai_socktype = SOCK_STREAM;
+	hint.ai_family = family;  // 设置地址族
+	hint.ai_flags = AI_PASSIVE;  // 用于指定额外的选项
+	hint.ai_socktype = SOCK_STREAM;  // 指定套接字类型
 
-#ifdef HAVE_UNIX_SOCKETS
+#ifdef HAVE_UNIX_SOCKETS  // unix 套接字处理
 	if (family == AF_UNIX)
 	{
 		/* Lock_AF_UNIX will also fill in sock_path. */
@@ -277,12 +277,12 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 	else
 #endif   /* HAVE_UNIX_SOCKETS */
 	{
-		snprintf(portNumberStr, sizeof(portNumberStr), "%d", portNumber);
-		service = portNumberStr;
+		snprintf(portNumberStr, sizeof(portNumberStr), "%d", portNumber);  // 将端口号转换为字符串格式，存储在 portNumberStr 中（将端口号 5432 转换为字符串 "5432"）
+		service = portNumberStr;  // 将服务名称设置为端口号字符串（将 service 指向字符串 "5432"）
 	}
 
-	ret = pg_getaddrinfo_all(hostName, service, &hint, &addrs);
-	if (ret || !addrs)
+	ret = pg_getaddrinfo_all(hostName, service, &hint, &addrs);   // 调用 pg_getaddrinfo_all 函数解析主机名和服务名，获取地址信息链表
+	if (ret || !addrs)  // 错误处理
 	{
 		if (hostName)
 			ereport(LOG,
@@ -297,9 +297,9 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 		return STATUS_ERROR;
 	}
 
-	for (addr = addrs; addr; addr = addr->ai_next)
+	for (addr = addrs; addr; addr = addr->ai_next)  // 遍历地址信息链表
 	{
-		if (!IS_AF_UNIX(family) && IS_AF_UNIX(addr->ai_family))
+		if (!IS_AF_UNIX(family) && IS_AF_UNIX(addr->ai_family))  // 如果未请求 Unix 域套接字但当前地址是 Unix 域套接字
 		{
 			/*
 			 * Only set up a unix domain socket when they really asked for it.
@@ -308,13 +308,13 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 			continue;
 		}
 
-		/* See if there is still room to add 1 more socket. */
-		for (; listen_index < MaxListen; listen_index++)
+		/* See if there is still room to add 1 more socket. 检查数组是否有位置*/
+		for (; listen_index < MaxListen; listen_index++)  // 查找 ListenSocket 数组中第一个空闲位置
 		{
-			if (ListenSocket[listen_index] == -1)
+			if (ListenSocket[listen_index] == -1)  // 如果找到空闲位置，退出循环；否则listen_index将会继续增加，直到找到空闲位置或超出MaxListen
 				break;
 		}
-		if (listen_index >= MaxListen)
+		if (listen_index >= MaxListen)  // 如果数组已满，记录错误日志，说明超出最大监听数
 		{
 			ereport(LOG,
 					(errmsg("could not bind to all requested addresses: MAXLISTEN (%d) exceeded",
@@ -323,22 +323,22 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 		}
 
 		/* set up family name for possible error messages */
-		switch (addr->ai_family)
+		switch (addr->ai_family)  // 根据地址族设置描述信息
 		{
-			case AF_INET:
+			case AF_INET:  // IPv4 地址族
 				familyDesc = _("IPv4");
 				break;
 #ifdef HAVE_IPV6
-			case AF_INET6:
+			case AF_INET6: // IPv6 地址族
 				familyDesc = _("IPv6");
 				break;
 #endif
 #ifdef HAVE_UNIX_SOCKETS
-			case AF_UNIX:
+			case AF_UNIX:  // Unix 域套接字
 				familyDesc = _("Unix");
 				break;
 #endif
-			default:
+			default:  // 其他地址族
 				snprintf(familyDescBuf, sizeof(familyDescBuf),
 						 _("unrecognized address family %d"),
 						 addr->ai_family);
@@ -346,14 +346,14 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 				break;
 		}
 
-		if ((fd = socket(addr->ai_family, SOCK_STREAM, 0)) < 0)
+		if ((fd = socket(addr->ai_family, SOCK_STREAM, 0)) < 0)  // 创建套接字
 		{
 			ereport(LOG,
 					(errcode_for_socket_access(),
 			/* translator: %s is IPv4, IPv6, or Unix */
 					 errmsg("could not create %s socket: %m",
 							familyDesc)));
-			continue;
+			continue;  // 继续下一个地址
 		}
 
 #ifndef WIN32
@@ -560,19 +560,19 @@ Setup_AF_UNIX(void)
 
 
 /*
- * StreamConnection -- create a new connection with client using
+ * StreamConnection -- create a new connection with client using  
  *		server port.  Set port->sock to the FD of the new connection.
  *
  * ASSUME: that this doesn't need to be non-blocking because
  *		the Postmaster uses select() to tell when the server master
  *		socket is ready for accept().
- *
- * RETURNS: STATUS_OK or STATUS_ERROR
+ * 使用服务器端口创建与客户端的新连接。STATUS_OK 表示成功，STATUS_ERROR 表示失败
+ * RETURNS: STATUS_OK or STATUS_ERROR  
  */
 int
 StreamConnection(int server_fd, Port *port)
 {
-	/* accept connection and fill in the client (remote) address */
+	/* 接受连接并填充客户端（远程）地址 */
 	port->raddr.salen = sizeof(port->raddr.addr);
 	if ((port->sock = accept(server_fd,
 							 (struct sockaddr *) & port->raddr.addr,
@@ -603,7 +603,7 @@ StreamConnection(int server_fd, Port *port)
 		port->raddr.addr.ss_family = AF_UNIX;
 #endif
 
-	/* fill in the server (local) address */
+	// 填充服务器（本地）地址
 	port->laddr.salen = sizeof(port->laddr.addr);
 	if (getsockname(port->sock,
 					(struct sockaddr *) & port->laddr.addr,
@@ -613,13 +613,13 @@ StreamConnection(int server_fd, Port *port)
 		return STATUS_ERROR;
 	}
 
-	/* select NODELAY and KEEPALIVE options if it's a TCP connection */
+	/* 如果是 TCP 连接，选择 NODELAY 和 KEEPALIVE 选项 */
 	if (!IS_AF_UNIX(port->laddr.addr.ss_family))
 	{
 		int			on;
 
 #ifdef	TCP_NODELAY
-		on = 1;
+		on = 1;  // 开启 TCP_NODELAY 选项
 		if (setsockopt(port->sock, IPPROTO_TCP, TCP_NODELAY,
 					   (char *) &on, sizeof(on)) < 0)
 		{
@@ -627,7 +627,7 @@ StreamConnection(int server_fd, Port *port)
 			return STATUS_ERROR;
 		}
 #endif
-		on = 1;
+		on = 1;  // 开启 SO_KEEPALIVE 选项
 		if (setsockopt(port->sock, SOL_SOCKET, SO_KEEPALIVE,
 					   (char *) &on, sizeof(on)) < 0)
 		{
